@@ -3,4 +3,48 @@
 {% endblock %}
 {% block content %}
 <p>Playgroung page: It is here that we will ba able to see the creatures in the environment.</p>
+
+<canvas id="Canvas" width="600" height="600" style="border:1px solid #d3d3d3;">
+</canvas>
+<script src="https://js.pusher.com/4.4/pusher.min.js"></script>
+
+
+
+<script>
+
+    Pusher.logToConsole = true;
+    
+    var pusher = new Pusher('d31544dff3c77506346e', {
+      cluster: 'us2',
+      forceTLS: true
+    });
+    
+    var c = document.getElementById("Canvas");
+    var channel = pusher.subscribe('my-channel');
+    var ctx = c.getContext("2d");
+
+    function clear() {
+        ctx.clearRect(-50, -50, c.width+100, c.height+100);
+    }
+    function draw_circle(x,y,r,c){
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,Math.PI*2,false);
+        ctx.fill();
+    }
+
+    channel.bind('my-event', function(data) {
+        clear()
+
+        var i;
+        for (i = 0; i < data.length; i++) { 
+        draw_circle(data[i][0], data[i][1], data[i][2], data[i][3]);
+       
+        };
+       
+        })
+    
+    
+    
+</script> 
 {% endblock %}
