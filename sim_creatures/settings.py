@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'hello',
 ]
 
@@ -51,6 +52,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'sim_creatures.urls'
+ASGI_APPLICATION = "sim_creatures.routing.application"
 
 TEMPLATES = [
     {
