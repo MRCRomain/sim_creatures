@@ -11,16 +11,16 @@
 
 
 <script>
-
-    Pusher.logToConsole = true;
+    //console.log(window.location)
+    var loc = window.location
     
-    var pusher = new Pusher('d31544dff3c77506346e', {
-      cluster: 'us2',
-      forceTLS: true
-    });
-    
+    var wsStart = 'ws://' 
+    if (loc.protocol == 'https'){
+        wsStart = 'wss://'
+    }
+    var endpoint = wsStart + loc.host + loc.pathname
+    var socket = new WebSocket(endpoint)    
     var c = document.getElementById("Canvas");
-    var channel = pusher.subscribe('my-channel');
     var ctx = c.getContext("2d");
 
     function clear() {
@@ -33,17 +33,28 @@
         ctx.fill();
     }
 
-    channel.bind('my-event', function(data) {
+    socket.onmessage = function(e){
+        data = JSON.parse(e.data)
         clear()
-
         var i;
         for (i = 0; i < data.length; i++) { 
-        draw_circle(data[i][0], data[i][1], data[i][2], data[i][3]);
-       
-        };
-       
-        })
-    
+            draw_circle(data[i][0], data[i][1], data[i][2], data[i][3]);
+        }
+    }
+
+    socket.onopen = function(e){
+        console.log("open",e)
+    }
+
+    socket.onerror = function(e){
+        console.log("error",e)
+    }
+
+    socket.onclose = function(e){
+        console.log("error",e)
+    }
+
+
     
     
 </script> 
