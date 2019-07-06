@@ -12,8 +12,8 @@ class environment ():
         self.foods      = [] 
         self.creatures  = []
         self.age        = 0
-        nb_food         = 20
-        nb_creature     = 7
+        nb_food         = 10
+        nb_creature     = 5
         for _ in range(nb_food):
             self.foods.append(food(self))
         for _ in range(nb_creature):
@@ -106,21 +106,9 @@ class creature():
         obj_seen = self.vision(env)
         if len(obj_seen) != 0:
             self.move(obj_seen[0])
-        else:
-            vect = random.random()
-            self.x += self.speed * vect * random.choice([-1,1])
-            self.y += self.speed * (1-vect) * random.choice([-1,1])
-
-        #Losing health because not enough energy
         if self.energy <= 0:
             self.energy = 0
             self.hp -= 10
-
-        #Able to reproduce
-        if self.energy > 60:
-            self.color = "#9b00a6"
-        else:
-            self.color = "a60000"
 
 
 
