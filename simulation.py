@@ -14,12 +14,18 @@ class Point:
 
     def distance_to_point(self, pt):
         return( ((pt.x - self.x)**2 + (pt.y - self.y)**2) ** 0.5)
+    
+    def __repr__(self):
+        return("["+str(self.x)+" , "+str(self.y)+"]")
 
 class Vector:
     """geometric vector"""
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    def __repr__(self):
+        return("["+str(self.x)+" , "+str(self.y)+"]")
 
     def vec_lenght(self):
         return (self.x**2 + self.y**2)**.5
@@ -108,9 +114,9 @@ class Creature(Playground_object):
             target.eaten()
             self.energy += 30
         else:
-            if direction.isHorizontal:
+            if direction.isHorizontal():
                 move = Vector(self.speed,0)
-            elif direction.isVertical:
+            elif direction.isVertical():
                 move = Vector(0,self.speed)
             else:
                 move_x = dx/abs(dx) * ((self.speed**2 / (1+(dy/dx)**2 ))) ** 0.5
@@ -188,7 +194,7 @@ class Environment:
         for i, elt in enumerate(self.foods):
             if elt.energy == 0:
                 del self.foods[i]
-                self.pop_random_berry()
+                self.pop_berry()
         for i, creature in enumerate(self.creatures):
             creature.update(self)
             if creature.hp <= 0:
