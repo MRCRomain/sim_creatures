@@ -5,7 +5,7 @@ import sys
 from threading import Thread
 import pusher
 import time
-from simulation import environment
+from simulation import Environment
 
 
 pusher_client = pusher.Pusher(
@@ -39,7 +39,7 @@ def start_new_thread(function):
 @start_new_thread
 def foo():
     #init the simulation
-    env_playground = environment()
+    env_playground = Environment()
    
     while True:
         time.sleep(1)
