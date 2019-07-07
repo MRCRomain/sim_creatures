@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from threading import Thread
-from simulation import environment
+from simulation import Environment
 
 
 
@@ -18,7 +18,7 @@ class send_data(AsyncConsumer):
             "type": "websocket.send",
             "text": json.dumps(["Hello world"])
         })
-        env_playground = environment()
+        env_playground = Environment()
         while True:
             await asyncio.sleep(0.1)
             env_playground.update()

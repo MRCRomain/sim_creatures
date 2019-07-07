@@ -25,13 +25,13 @@ class Vector:
         return (self.x**2 + self.y**2)**.5
 
     def isHorizontal(self):
-        if y == 0:
+        if self.y == 0:
             return(True)
         else:
             return(False)
     
     def isVertical(self):
-        if x == 0:
+        if self.x == 0:
             return(True)
         else:
             return(False)
@@ -62,8 +62,6 @@ class Food(Playground_object):
 
         Playground_object.__init__(self, name, id=id, radius=self.radius, position=self.position, energy=1, color='#06a600')
 
-    
-    
     def eaten(self):
         self.energy = 0
 
@@ -95,7 +93,6 @@ class Creature(Playground_object):
     def vision(self,env):
         obj_seen=[]
         for food in env.foods:
-            #dst = ((food.position.x - self.x)**2 + (food.position.y - self.y)**2) ** 0.5
             dst = self.distance_to_object(food) # methode heritee de la classe Playground object
             if dst <= self.vision_radius:
                 obj_seen.append(food)
@@ -156,21 +153,27 @@ class Environment:
 
         
         for _ in range(nb_food):
-            self.pop_random_berry()
+            self.pop_berry()
         for _ in range(nb_creature):
-            self.pop_random_ant()
+            self.pop_ant()
     
     def generate_random_position(self, radius):
         x = random.randrange(radius, self.height - radius+1, 1)
         y = random.randrange(radius, self.width - radius+1, 1)
         return Point(x,y)
     
-    def pop_random_berry(self):
-        self.foods.append(Berry(self, self.current_id))
+    def pop_berry(self, *args):
+        if len(args) == 0:
+            self.foods.append(Berry(self, self.current_id))
+        else:
+            self.foods.append(Berry(self, self.current_id, args[0]))
         self.current_id += 1
     
-    def pop_random_ant(self):
-        self.creatures.append(Ant(self, self.current_id))
+    def pop_ant(self, *args):
+        if len(args) == 0:
+            self.creatures.append(Ant(self, self.current_id))
+        else:
+            self.creatures.append(Ant(self, self.current_id, args[0]))
         self.current_id += 1
 
     def send_update(self):
@@ -193,8 +196,7 @@ class Environment:
                     x = self.creatures[i].position.x + random.randrange(-20,20,1)
                     y = self.creatures[i].position.y + random.randrange(-20,20,1)
                     food_position = Point(x,y)
-                    self.foods.append(Berry(self, self.current_id, food_position))
-                    self.current_id += 1######################
+                    self.pop_berry(food_position)
                 del self.creatures[i]
 
 
