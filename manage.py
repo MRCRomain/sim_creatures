@@ -47,7 +47,7 @@ def foo():
         pusher_client.trigger('my-channel', 'my-event', env_playground.send_update())
 
 if __name__ == '__main__':
-    foo()
+    #foo()
     main()
    
 
