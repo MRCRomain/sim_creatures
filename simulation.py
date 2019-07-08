@@ -14,18 +14,12 @@ class Point:
 
     def distance_to_point(self, pt):
         return( ((pt.x - self.x)**2 + (pt.y - self.y)**2) ** 0.5)
-    
-    def __repr__(self):
-        return("["+str(self.x)+" , "+str(self.y)+"]")
 
 class Vector:
     """geometric vector"""
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-    def __repr__(self):
-        return("["+str(self.x)+" , "+str(self.y)+"]")
 
     def vec_lenght(self):
         return (self.x**2 + self.y**2)**.5
@@ -68,6 +62,8 @@ class Food(Playground_object):
 
         Playground_object.__init__(self, name, id=id, radius=self.radius, position=self.position, energy=1, color='#06a600')
 
+    
+    
     def eaten(self):
         self.energy = 0
 
@@ -76,6 +72,7 @@ class Berry(Food):
     def __init__(self, env, id, *args):
         # food class inheritance with a random position
         Food.__init__(self, env=env, name="Berry", id=id)
+        self.energy = 30
         # Update of the position according to the input (*args)
         if len(args) == 0:
             self.position = env.generate_random_position(self.radius)
@@ -89,12 +86,13 @@ class Creature(Playground_object):
     def __init__(self,env, name, id):
         self.radius = 5
         self.position = env.generate_random_position(self.radius)
-        Playground_object.__init__(self, name, id, radius=self.radius, position=self.position, energy=100, color='#a60000')
+        Playground_object.__init__(self, name, id, radius=self.radius, position=self.position, energy=100, color='#ff3838')
 
         self.vision_radius = 150
         self.hp     = 100
-        self.speed  = 10
+        self.speed  = 10 * env.speed_ratio
         self.age    =0
+        self.energy_to_move = 3 * env.speed_ratio
 
     def vision(self,env):
         obj_seen=[]
@@ -106,13 +104,13 @@ class Creature(Playground_object):
         return(obj_seen_sorted)
 
     def move(self,target):
-        self.energy -= 3
+        self.energy -= self.energy_to_move
         dx, dy = target.position.x - self.position.x , target.position.y - self.position.y
         direction = Vector(dx,dy)
         if self.distance_to_object(target) < self.speed:
             self.position = target.position
             target.eaten()
-            self.energy += 30
+            self.energy += target.energy
         else:
             if direction.isHorizontal():
                 move = Vector(self.speed,0)
@@ -125,61 +123,57 @@ class Creature(Playground_object):
             self.position.translate(move)
 
     def update(self,env):
-        self.energy -= 1
-        self.age    += 1
+        self.energy -= 1 * env.speed_ratio
+        self.age    += 1 * env.speed_ratio
 
         obj_seen = self.vision(env)
         if len(obj_seen) != 0:
             self.move(obj_seen[0])
         if self.energy <= 0:
             self.energy = 0
-            self.hp -= 10
+            self.hp -= 10 * env.speed_ratio
         
 class Ant(Creature):
     """ant object = particular creature object"""
     def __init__(self, env, id):
         Creature.__init__(self, env=env, name="Ant", id=id)
         self.update(env)
-        self.hp = 80
-        self.speed = 8
-        self.vision_radius = 100
+        self.hp = 80 / env.speed_ratio
+        self.speed = 50 * env.speed_ratio
+        self.vision_radius = 200
         
         
 
 class Environment:
-    def __init__(self):
+    def __init__(self,fps):
         self.height     = 600
         self.width      = 600
         self.foods      = [] 
         self.creatures  = []
         self.age        = 0
         self.current_id = 1
+        self.speed_ratio = 1 / fps
+        self.chance_pop_food = 70 #% chance of making a new food every second
         nb_food         = 10
         nb_creature     = 5
 
         
         for _ in range(nb_food):
-            self.pop_berry()
+            self.pop_random_berry()
         for _ in range(nb_creature):
-            self.pop_ant()
+            self.pop_random_ant()
     
     def generate_random_position(self, radius):
         x = random.randrange(radius, self.height - radius+1, 1)
         y = random.randrange(radius, self.width - radius+1, 1)
         return Point(x,y)
     
-    def pop_berry(self, *args):
-        if len(args) == 0:
-            self.foods.append(Berry(self, self.current_id))
-        else:
-            self.foods.append(Berry(self, self.current_id, args[0]))
+    def pop_random_berry(self):
+        self.foods.append(Berry(self, self.current_id))
         self.current_id += 1
     
-    def pop_ant(self, *args):
-        if len(args) == 0:
-            self.creatures.append(Ant(self, self.current_id))
-        else:
-            self.creatures.append(Ant(self, self.current_id, args[0]))
+    def pop_random_ant(self):
+        self.creatures.append(Ant(self, self.current_id))
         self.current_id += 1
 
     def send_update(self):
@@ -191,10 +185,13 @@ class Environment:
         return(message)
 
     def update(self):
+        self.age += 1
+        if self.age * self.speed_ratio % 1 == 0: 
+            if random.random() * 100 < self.chance_pop_food:
+                self.pop_random_berry()
         for i, elt in enumerate(self.foods):
             if elt.energy == 0:
                 del self.foods[i]
-                self.pop_berry()
         for i, creature in enumerate(self.creatures):
             creature.update(self)
             if creature.hp <= 0:
@@ -202,7 +199,8 @@ class Environment:
                     x = self.creatures[i].position.x + random.randrange(-20,20,1)
                     y = self.creatures[i].position.y + random.randrange(-20,20,1)
                     food_position = Point(x,y)
-                    self.pop_berry(food_position)
+                    self.foods.append(Berry(self, self.current_id, food_position))
+                    self.current_id += 1######################
                 del self.creatures[i]
 
 

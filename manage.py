@@ -7,6 +7,10 @@ import pusher
 import time
 from simulation import Environment
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+
 
 pusher_client = pusher.Pusher(
   app_id='816618',
@@ -39,15 +43,20 @@ def start_new_thread(function):
 @start_new_thread
 def foo():
     #init the simulation
-    env_playground = Environment()
+    fps = 60
+    env_playground = Environment(fps)
+    
    
     while True:
-        time.sleep(1)
+        time.sleep(1/fps)
+        channel_layer = get_channel_layer()
         env_playground.update()
-        pusher_client.trigger('my-channel', 'my-event', env_playground.send_update())
+        async_to_sync(channel_layer.group_send)("connected_users", {"type": "receive_data", "data" :env_playground.send_update()})
+        
+    
 
 if __name__ == '__main__':
-    #foo()
+    foo()
     main()
    
 

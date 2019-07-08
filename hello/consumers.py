@@ -1,39 +1,25 @@
-import asyncio
 import json
-from django.contrib.auth import get_user_model
-from channels.consumer import AsyncConsumer
-from channels.db import database_sync_to_async
-from threading import Thread
-from simulation import Environment
+from channels.generic.websocket import WebsocketConsumer
+from asgiref.sync import async_to_sync
 
+class send_data(WebsocketConsumer):
+    def connect(self):
+        self.group_name = "connected_users"
+        # Join room group
+        async_to_sync(self.channel_layer.group_add)(
+            self.group_name,
+            self.channel_name
+        )
+        self.accept()
 
+    def disconnect(self, close_code):
+        # Leave room group
+        async_to_sync(self.channel_layer.group_discard)(
+            self.group_name,
+            self.channel_name
+        )
 
-class send_data(AsyncConsumer):
-    async def websocket_connect(self,event):
-        print("connected", event)
-        await self.send({
-            "type": "websocket.accept"
-        })
-        await self.send({
-            "type": "websocket.send",
-            "text": json.dumps(["Hello world"])
-        })
-        env_playground = Environment()
-        while True:
-            await asyncio.sleep(0.1)
-            env_playground.update()
-            data = env_playground.send_update()
-
-            await self.send({
-                'type': 'websocket.send',
-                'text': json.dumps(data)
-            })
-
-
-       
-
-    async def websocket_receive(self,event):
-        print("received", event)
-
-    async def websocket_disconnect(self,event):
-        print("disconnected", event)
+    # Receive message from group
+    def receive_data(self, data):
+        # Send message to WebSocket
+        self.send(text_data=json.dumps(data))
