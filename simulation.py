@@ -83,9 +83,12 @@ class Berry(Food):
 
 class Creature(Playground_object):
     """creature object = particular playground object"""
-    def __init__(self,env, name, id):
+    def __init__(self,env, name, id, *args):
         self.radius = 5
-        self.position = env.generate_random_position(self.radius)
+        if len(args) == 0:
+            self.position = env.generate_random_position(self.radius)
+        else:
+            self.position = args[0]
         Playground_object.__init__(self, name, id, radius=self.radius, position=self.position, energy=100, color='#ff3838')
 
         self.vision_radius = 150
@@ -94,13 +97,13 @@ class Creature(Playground_object):
         self.age    =0
         self.energy_to_move = 3 * env.speed_ratio
 
-    def vision(self,env):
+    def vision(self,looking_for):
         obj_seen=[]
-        for food in env.foods:
-            dst = self.distance_to_object(food) # methode heritee de la classe Playground object
+        for elt in looking_for:
+            dst = self.distance_to_object(elt) # methode heritee de la classe Playground object
             if dst <= self.vision_radius:
-                obj_seen.append(food)
-        obj_seen_sorted = sorted(obj_seen, key=lambda food: self.distance_to_object(food))
+                obj_seen.append(elt)
+        obj_seen_sorted = sorted(obj_seen, key=lambda elt: self.distance_to_object(elt))
         return(obj_seen_sorted)
 
     def move(self,target):
@@ -109,8 +112,7 @@ class Creature(Playground_object):
         direction = Vector(dx,dy)
         if self.distance_to_object(target) < self.speed:
             self.position = target.position
-            target.eaten()
-            self.energy += target.energy
+            return(True)
         else:
             if direction.isHorizontal():
                 move = Vector(self.speed,0)
@@ -121,26 +123,66 @@ class Creature(Playground_object):
                 move_y = dy/abs(dy) * abs(move_x) * abs(dy/dx)
                 move = Vector(move_x, move_y)
             self.position.translate(move)
+            return False
 
     def update(self,env):
-        self.energy -= 1 * env.speed_ratio
+        self.energy -= 2 * env.speed_ratio
         self.age    += 1 * env.speed_ratio
 
-        obj_seen = self.vision(env)
-        if len(obj_seen) != 0:
-            self.move(obj_seen[0])
         if self.energy <= 0:
             self.energy = 0
             self.hp -= 10 * env.speed_ratio
+
+        if self.energy > 100:
+             self.energy = 100
+
+        if self.age > 60:
+            self.hp = 0
+            
+       
+
+        #"Brain of the creature"
+        if self.energy < 50:
+            self.color='#ff3838'
+            obj_seen = self.vision(env.foods)
+            if len(obj_seen) != 0:
+                arrived = self.move(obj_seen[0])
+                if arrived:
+                    self.energy += obj_seen[0].energy
+                    obj_seen[0].eaten()
+            else:
+                pass
+            
+        elif self.age > 10:
+            self.color="#f988fc"
+            obj_seen = self.vision(env.creatures)
+            if len(obj_seen) > 1:
+                arrived = self.move(obj_seen[1])
+                if arrived:
+                    self.color == "#db1ddb"
+                    self.energy -= 50
+                    env.creatures.append(Ant(env, env.current_id, self.position))
+                    env.current_id += 1
+            else:
+                pass
+            
+
+       
         
 class Ant(Creature):
     """ant object = particular creature object"""
-    def __init__(self, env, id):
+    def __init__(self, env, id, *args):
         Creature.__init__(self, env=env, name="Ant", id=id)
         self.update(env)
-        self.hp = 80 / env.speed_ratio
+        self.hp = 80 
         self.speed = 50 * env.speed_ratio
         self.vision_radius = 200
+
+        if len(args) == 0:
+            self.position = env.generate_random_position(self.radius)
+        else:
+            self.position = args[0]
+
         
         
 
@@ -154,8 +196,8 @@ class Environment:
         self.current_id = 1
         self.speed_ratio = 1 / fps
         self.chance_pop_food = 70 #% chance of making a new food every second
-        nb_food         = 10
-        nb_creature     = 5
+        nb_food         = 15
+        nb_creature     = 10
 
         
         for _ in range(nb_food):

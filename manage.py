@@ -3,7 +3,6 @@
 import os
 import sys
 from threading import Thread
-import pusher
 import time
 from simulation import Environment
 
@@ -12,13 +11,7 @@ from asgiref.sync import async_to_sync
 
 
 
-pusher_client = pusher.Pusher(
-  app_id='816618',
-  key='d31544dff3c77506346e',
-  secret='abcdc31eb34b60ae065f',
-  cluster='us2',
-  ssl=True
-)
+
 
 
 def main():
