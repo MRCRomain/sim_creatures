@@ -34,7 +34,6 @@ class Vector:
         else:
             return(False)
 
-
 class Playground_object:
     """game object located in the playground"""
     def __init__(self, name, id, radius, position, energy, color, *args):
@@ -71,8 +70,6 @@ class Berry(Food):
             self.position = env.generate_random_position(self.radius)
         else:
             self.position = args[0]
-
-
 
 class Creature(Playground_object):
     """creature object = particular playground object"""
@@ -138,8 +135,6 @@ class Creature(Playground_object):
         if self.age > 40:
             self.hp = 0
             
-       
-
         #"Brain of the creature"
         if self.energy < 50:
             self.color='#ff3838'
@@ -164,25 +159,18 @@ class Creature(Playground_object):
             else:
                 pass
             
-
-       
-        
 class Ant(Creature):
     """ant object = particular creature object"""
     def __init__(self, env, id, *args):
         Creature.__init__(self, env=env, name="Ant", id=id)
-        self.update(env)
         self.hp = 80 
-        self.speed = 50 * env.speed_ratio
+        self.speed = 30 * env.speed_ratio
         self.vision_radius = 200
 
         if len(args) == 0:
             self.position = env.generate_random_position(self.radius)
         else:
             self.position = args[0]
-
-        
-        
 
 class Environment:
     def __init__(self,fps):
@@ -197,7 +185,6 @@ class Environment:
         nb_food         = 5
         nb_creature     = 8
 
-        
         for _ in range(nb_food):
             self.pop_random_berry()
         for _ in range(nb_creature):
@@ -232,8 +219,10 @@ class Environment:
         for i, elt in enumerate(self.foods):
             if elt.hp <= 0:
                 del self.foods[i]
+       
         for i, creature in enumerate(self.creatures):
             creature.update(self)
+            
             if creature.hp <= 0:
                 for _ in range(3):
                     x = self.creatures[i].position.x + random.randrange(-20,20,1)
