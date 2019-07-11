@@ -1,7 +1,5 @@
 import random
 
-
-
 class Point:
     """geometric point"""
     def __init__(self, x, y):
@@ -40,39 +38,34 @@ class Vector:
 class Playground_object:
     """game object located in the playground"""
     def __init__(self, name, id, radius, position, energy, color, *args):
-        self.name = name
-        self.id = id
-        self.radius = radius
-        self.position = position
-        self.energy = energy
-        self.color = color
+        self.name       = name
+        self.id         = id
+        self.radius     = radius
+        self.position   = position
+        self.energy     = energy
+        self.color      = color
 
     def distance_to_object(self, obj):
         return( ((obj.position.x - self.position.x)**2 + (obj.position.y - self.position.y)**2) ** 0.5)
-
 
 class Food(Playground_object):
     """food object = particular playground object"""
     def __init__(self, env, name, id, *args):
         self.radius = 3
+        self.hp     = 1
+
         if len(args) == 0:
             self.position = env.generate_random_position(self.radius)
         else:
             self.position = args[0]
-
         Playground_object.__init__(self, name, id=id, radius=self.radius, position=self.position, energy=1, color='#06a600')
-
-    
-    
-    def eaten(self):
-        self.energy = 0
 
 class Berry(Food):
     """berry object = particular food object"""
     def __init__(self, env, id, *args):
         # food class inheritance with a random position
         Food.__init__(self, env=env, name="Berry", id=id)
-        self.energy = 30
+        self.energy = 20
         # Update of the position according to the input (*args)
         if len(args) == 0:
             self.position = env.generate_random_position(self.radius)
@@ -96,6 +89,7 @@ class Creature(Playground_object):
         self.speed  = 10 * env.speed_ratio
         self.age    =0
         self.energy_to_move = 3 * env.speed_ratio
+        self.attack_value = 10
 
     def vision(self,looking_for):
         obj_seen=[]
@@ -105,6 +99,11 @@ class Creature(Playground_object):
                 obj_seen.append(elt)
         obj_seen_sorted = sorted(obj_seen, key=lambda elt: self.distance_to_object(elt))
         return(obj_seen_sorted)
+
+    def eating(self,target):
+        target.hp -= self.attack_value
+        if target.hp <= 0:
+            self.energy += target.energy
 
     def move(self,target):
         self.energy -= self.energy_to_move
@@ -126,7 +125,7 @@ class Creature(Playground_object):
             return False
 
     def update(self,env):
-        self.energy -= 2 * env.speed_ratio
+        self.energy -= 3 * env.speed_ratio
         self.age    += 1 * env.speed_ratio
 
         if self.energy <= 0:
@@ -136,7 +135,7 @@ class Creature(Playground_object):
         if self.energy > 100:
              self.energy = 100
 
-        if self.age > 60:
+        if self.age > 40:
             self.hp = 0
             
        
@@ -148,8 +147,7 @@ class Creature(Playground_object):
             if len(obj_seen) != 0:
                 arrived = self.move(obj_seen[0])
                 if arrived:
-                    self.energy += obj_seen[0].energy
-                    obj_seen[0].eaten()
+                    self.eating(obj_seen[0])
             else:
                 pass
             
@@ -196,8 +194,8 @@ class Environment:
         self.current_id = 1
         self.speed_ratio = 1 / fps
         self.chance_pop_food = 70 #% chance of making a new food every second
-        nb_food         = 15
-        nb_creature     = 10
+        nb_food         = 5
+        nb_creature     = 8
 
         
         for _ in range(nb_food):
@@ -232,7 +230,7 @@ class Environment:
             if random.random() * 100 < self.chance_pop_food:
                 self.pop_random_berry()
         for i, elt in enumerate(self.foods):
-            if elt.energy == 0:
+            if elt.hp <= 0:
                 del self.foods[i]
         for i, creature in enumerate(self.creatures):
             creature.update(self)
