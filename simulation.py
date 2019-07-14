@@ -92,7 +92,7 @@ class Creature(Playground_object):
         obj_seen=[]
         for elt in looking_for:
             dst = self.distance_to_object(elt) # methode heritee de la classe Playground object
-            if dst <= self.vision_radius:
+            if dst <= self.vision_radius and elt != self:
                 obj_seen.append(elt)
         obj_seen_sorted = sorted(obj_seen, key=lambda elt: self.distance_to_object(elt))
         return(obj_seen_sorted)
@@ -149,8 +149,8 @@ class Creature(Playground_object):
         elif self.age > 10:
             self.color="#f988fc"
             obj_seen = self.vision(env.creatures)
-            if len(obj_seen) > 1:
-                arrived = self.move(obj_seen[1])
+            if len(obj_seen) > 0:
+                arrived = self.move(obj_seen[0])
                 if arrived:
                     self.color == "#db1ddb"
                     self.energy -= 50
@@ -183,7 +183,7 @@ class Environment:
         self.speed_ratio = 1 / fps
         self.chance_pop_food = 70 #% chance of making a new food every second
         nb_food         = 5
-        nb_creature     = 8
+        nb_creature     = 5
 
         for _ in range(nb_food):
             self.pop_random_berry()
@@ -231,5 +231,4 @@ class Environment:
                     self.foods.append(Berry(self, self.current_id, food_position))
                     self.current_id += 1######################
                 del self.creatures[i]
-
-
+      
