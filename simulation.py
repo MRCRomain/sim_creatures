@@ -140,8 +140,8 @@ class Creature(Playground_object):
             self.color='#ff3838'
             obj_seen = self.vision(env.foods)
             if len(obj_seen) != 0:
-                arrived = self.move(obj_seen[0])
-                if arrived:
+                #arrived = self.move(obj_seen[0])
+                if self.move(obj_seen[0]):
                     self.eating(obj_seen[0])
             else:
                 pass
@@ -150,8 +150,8 @@ class Creature(Playground_object):
             self.color="#f988fc"
             obj_seen = self.vision(env.creatures)
             if len(obj_seen) > 0:
-                arrived = self.move(obj_seen[0])
-                if arrived:
+                #arrived = self.move(obj_seen[0])
+                if self.move(obj_seen[0]):
                     self.color == "#db1ddb"
                     self.energy -= 50
                     env.creatures.append(Ant(env, env.current_id, self.position))
